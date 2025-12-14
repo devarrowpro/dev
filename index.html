@@ -1,0 +1,196 @@
+<!DOCTYPE html><html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Convertidor de Logos Online | PNG JPG WEBP SVG</title>
+<meta name="description"\" content=\"Convierte logos e imágenes a PNG, JPG, WEBP o SVG gratis y online.\" />
+<style>
+:root{
+  --bg:#020617;
+  --card:#020617;
+  --accent:#22c55e;
+  --border:#334155;
+  --text:#e5e7eb;
+  --muted:#94a3b8;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  min-height:100vh;
+  background:radial-gradient(circle at top,#020617,#000);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;
+  color:var(--text);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:20px;
+}
+.app{
+  width:100%;
+  max-width:420px;
+  background:rgba(2,6,23,.85);
+  backdrop-filter:blur(14px);
+  border:1px solid var(--border);
+  border-radius:22px;
+  padding:24px;
+  box-shadow:0 25px 60px rgba(0,0,0,.6);
+}
+h1{
+  margin:0;
+  text-align:center;
+  font-size:24px;
+}
+.subtitle{
+  text-align:center;
+  font-size:13px;
+  color:var(--muted);
+  margin:8px 0 18px;
+}
+.upload-box{
+  border:2px dashed var(--border);
+  border-radius:16px;
+  padding:18px;
+  text-align:center;
+  cursor:pointer;
+  transition:.3s;
+}
+.upload-box:hover{border-color:var(--accent)}
+.upload-box input{display:none}
+.file-info{
+  font-size:12px;
+  color:#cbd5f5;
+  margin-top:8px;
+  word-break:break-all;
+}
+.controls label{
+  display:block;
+  font-size:13px;
+  margin-top:14px;
+}
+select,input[type=number],input[type=range],button{
+  width:100%;
+  padding:12px;
+  margin-top:6px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  background:#020617;
+  color:var(--text);
+  font-size:14px;
+}
+input[type=range]{padding:0}
+input[type=checkbox]{transform:scale(1.2);margin-right:6px}
+button{
+  background:linear-gradient(135deg,#22c55e,#16a34a);
+  color:#000;
+  border:none;
+  font-weight:700;
+  margin-top:22px;
+}
+button:active{transform:scale(.98)}
+.preview{
+  margin-top:18px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+.preview img{
+  max-width:120px;
+  background:#fff;
+  padding:6px;
+  border-radius:12px;
+}
+footer{
+  margin-top:18px;
+  text-align:center;
+  font-size:12px;
+  color:var(--muted);
+}
+canvas{display:none}
+</style>
+</head>
+<body>
+<div class="app">
+<h1>Convertidor de Logos</h1>
+<div class="subtitle">PNG · JPG · WEBP · SVG — Gratis y Online</div>
+<label class="upload-box">
+<input type="file" id="files" accept="image/*" multiple>
+📁 Selecciona o arrastra tus logos
+<div class="file-info" id="fileInfo">Ningún archivo seleccionado</div>
+</label>
+<div class="controls">
+<label>Formato de salida</label>
+<select id="format">
+<option value="png">PNG</option>
+<option value="jpeg">JPG / JPEG</option>
+<option value="webp">WEBP</option>
+<option value="svg">SVG</option>
+</select>
+<label>Ancho (px)</label>
+<input type="number" id="width" placeholder="Auto">
+<label>Alto (px)</label>
+<input type="number" id="height" placeholder="Auto">
+<label>Calidad (JPG / WEBP)</label>
+<input type="range" id="quality" min="0.4" max="1" step="0.05" value="0.9">
+<label><input type="checkbox" id="transparent" checked> Mantener fondo transparente</label>
+</div>
+<button onclick="convertir()">Convertir y Descargar</button>
+<div class="preview" id="preview"></div>
+<canvas id="canvas"></canvas>
+<footer>Funciona 100% en tu navegador · Sin subir archivos</footer>
+</div>
+<script>
+const input=document.getElementById('files');
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+const preview=document.getElementById('preview');
+const fileInfo=document.getElementById('fileInfo');
+input.addEventListener('change',()=>{
+preview.innerHTML='';
+if(!input.files.length){fileInfo.textContent='Ningún archivo seleccionado';return}
+fileInfo.textContent=[...input.files].map(f=>f.name).join(', ');
+[...input.files].forEach(file=>{
+if(!file.type.startsWith('image/'))return;
+const img=document.createElement('img');
+img.src=URL.createObjectURL(file);
+preview.appendChild(img);
+});
+});
+function convertir(){
+if(!input.files.length){alert('Selecciona una imagen');return}
+const format=document.getElementById('format').value;
+const quality=parseFloat(document.getElementById('quality').value)||0.9;
+const keepTransparent=document.getElementById('transparent').checked;
+const w=parseInt(document.getElementById('width').value);
+const h=parseInt(document.getElementById('height').value);
+[...input.files].forEach(file=>{
+const isSVG=file.type==='image/svg+xml';
+if(format==='svg'){
+if(!isSVG){alert('Solo SVG puede exportarse a SVG');return}
+const url=URL.createObjectURL(file);
+const a=document.createElement('a');
+a.href=url;
+a.download=file.name;
+a.click();
+URL.revokeObjectURL(url);
+return}
+const img=new Image();
+img.onload=()=>{
+const width=w||img.naturalWidth;
+const height=h||img.naturalHeight;
+canvas.width=width;canvas.height=height;
+ctx.clearRect(0,0,width,height);
+if(!keepTransparent||format==='jpeg'){ctx.fillStyle='#fff';ctx.fillRect(0,0,width,height)}
+ctx.drawImage(img,0,0,width,height);
+const dataURL=canvas.toDataURL('image/'+format,quality);
+const a=document.createElement('a');
+a.href=dataURL;
+a.download=file.name.replace(/\.[^/.]+$/,'')+'.'+(format==='jpeg'?'jpg':format);
+a.click();
+};
+img.src=URL.createObjectURL(file);
+});
+}
+</script>
+</body>
+</html>
